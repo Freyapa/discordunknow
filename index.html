@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
-            --primary: #0046ad; /* Deep Blue from requests */
+            --primary: #0046ad; /* Deep Blue */
             --bg: #f4f7fa;
             --white: #ffffff;
             --text: #333;
@@ -150,10 +150,12 @@
         <div id="loading" class="empty-state">กำลังเชื่อมต่อ...</div>
     </div>
 
+    <!-- Corrected Firebase SDK URL -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBY5b_eChwHx3qO-J4YkW9aw03xOOEMurM",
             authDomain: "discordunknow-54ce9.firebaseapp.com",
@@ -175,7 +177,7 @@
         const loading = document.getElementById('loading');
 
         if (!uid) {
-            document.body.innerHTML = '<div style="text-align:center; margin-top:50px;"><h1>⚠️ ไม่พบข้อมูลผู้ใช้</h1><p>กรุณาพิมพ์คำสั่ง <b>/site</b> ใน Discord บอทเพื่อรับลิงก์เข้าใช้งานครับ</p></div>';
+            document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: Prompt;"><h1>⚠️ ไม่พบข้อมูลผู้ใช้</h1><p>กรุณาพิมพ์คำสั่ง <b>/site</b> ใน Discord บอท<br>เพื่อรับลิงก์เข้าใช้งานส่วนตัวครับ</p></div>';
         } else {
             const userPlaylistRef = ref(db, `playlists/${uid}`);
             
@@ -200,7 +202,7 @@
                     return;
                 }
 
-                // If data is array
+                // If data is array (handle potential empty slots via filtering)
                 const songs = Array.isArray(data) ? data : Object.values(data);
                 
                 songs.forEach((url) => {
@@ -241,11 +243,6 @@
                 const input = document.getElementById('urlInput');
                 const url = input.value.trim();
                 if (url) {
-                    // Update DOM immediately for responsiveness, then save
-                    // (Actually let's just push to DB and let onValue handle it? 
-                    // No, for sorting we usually read-modify-write. 
-                    // To keep it simple: Read via snapshot, push, set)
-                    
                     get(userPlaylistRef).then((snap) => {
                         let current = snap.val() || [];
                         if (!Array.isArray(current)) current = Object.values(current);
