@@ -150,12 +150,12 @@
         <div id="loading" class="empty-state">กำลังเชื่อมต่อ...</div>
     </div>
 
-    <!-- Corrected Firebase SDK URL -->
+    <!-- Firebase SDK v10.7.1 (Stable) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your web app's Firebase configuration
+        // Firebase Configuration (Complete)
         const firebaseConfig = {
             apiKey: "AIzaSyBY5b_eChwHx3qO-J4YkW9aw03xOOEMurM",
             authDomain: "discordunknow-54ce9.firebaseapp.com",
@@ -163,7 +163,8 @@
             storageBucket: "discordunknow-54ce9.firebasestorage.app",
             messagingSenderId: "571989738366",
             appId: "1:571989738366:web:009545030d8cbcfc11292f",
-            measurementId: "G-25J7QG5SM5"
+            measurementId: "G-25J7QG5SM5",
+            databaseURL: "https://discordunknow-54ce9-default-rtdb.asia-southeast1.firebasedatabase.app/"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -209,6 +210,9 @@
                     if(!url) return;
                     addSongToDOM(url);
                 });
+            }, (error) => {
+                // If permission denied or other error
+                loading.innerHTML = `<span style="color:red">Connection Error: ${error.message}</span>`;
             });
 
             // --- Functions ---
