@@ -23,54 +23,80 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Bot Playlist Manager</h1>
+        <h1>🔥 Cloud Playlist Manager</h1>
         <div class="input-group">
             <input type="text" id="urlInput" placeholder="วางลิงก์ YouTube / Spotify ที่นี่...">
-            <button class="btn-add" onclick="addSong()">เพิ่มเพลง</button>
+            <button class="btn-add" id="addBtn">เพิ่มเพลง</button>
         </div>
-        <ul id="playlist"></ul>
+        <ul id="playlist">
+            <li style="text-align:center;">กำลังโหลดข้อมูล...</li>
+        </ul>
     </div>
 
-    <script>
-        const API_URL = '/api/playlist';
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-        async function loadPlaylist() {
-            const res = await fetch(API_URL);
-            const songs = await res.json();
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBY5b_eChwHx3qO-J4YkW9aw03xOOEMurM",
+            authDomain: "discordunknow-54ce9.firebaseapp.com",
+            projectId: "discordunknow-54ce9",
+            storageBucket: "discordunknow-54ce9.firebasestorage.app",
+            messagingSenderId: "571989738366",
+            appId: "1:571989738366:web:009545030d8cbcfc11292f",
+            measurementId: "G-25J7QG5SM5"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const playlistRef = ref(db, 'playlist');
+
+        // Add Song Function
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+            
+            if (url) {
+                push(playlistRef, url)
+                    .then(() => {
+                        console.log("Song added!");
+                        urlInput.value = '';
+                    })
+                    .catch((error) => console.error("Error adding song:", error));
+            }
+        });
+
+        // Real-time Listener (Read Songs)
+        onValue(playlistRef, (snapshot) => {
             const list = document.getElementById('playlist');
-            list.innerHTML = '';
-            songs.forEach((song, index) => {
+            list.innerHTML = ''; // Clear list
+            
+            if (!snapshot.exists()) {
+                list.innerHTML = '<li style="justify-content:center;">Playlist ว่างเปล่า</li>';
+                return;
+            }
+
+            const data = snapshot.val();
+            // Firebase returns object with unique keys, we map them
+            Object.entries(data).forEach(([key, songUrl]) => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <a href="${song}" target="_blank">${song}</a>
-                    <button class="btn-delete" onclick="deleteSong(${index})">ลบ</button>
+                    <a href="${songUrl}" target="_blank">${songUrl}</a>
+                    <button class="btn-delete" data-key="${key}">ลบ</button>
                 `;
+                
+                // Add click listener for delete button
+                li.querySelector('.btn-delete').addEventListener('click', function() {
+                    const keyToDelete = this.getAttribute('data-key');
+                    remove(ref(db, 'playlist/' + keyToDelete));
+                });
+
                 list.appendChild(li);
             });
-        }
-
-        async function addSong() {
-            const url = document.getElementById('urlInput').value;
-            if (!url) return;
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
-            document.getElementById('urlInput').value = '';
-            loadPlaylist();
-        }
-
-        async function deleteSong(index) {
-            await fetch(API_URL, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ index })
-            });
-            loadPlaylist();
-        }
-
-        loadPlaylist();
+        });
     </script>
 </body>
 </html>
